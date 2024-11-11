@@ -4,19 +4,26 @@ import { s } from "./Home.style";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Txt } from "../../components/Txt/Txt";
 import { MeteoBasic } from "../../components/MeteoBasic/MeteoBasic";
+import { MeteoInfo } from "../../components/MeteoInfo/MeteoInfo";
 import { getWeatherInterpretation } from "../../utils/meteo-utils";
 import { MeteoAdvanced } from "../../components/MeteoAdvanced/MeteoAdvanced";
 import { SearchBar } from "../../components/SearchBar/SearchBar";
 
 export function Home({ weather, city, onSubmitSearch }) {
+  // Sprawdź, czy dane `weather` są dostępne
+  if (!weather || !weather.current_weather) {
+    return <Txt>Ładowanie danych pogodowych...</Txt>; // Możesz dostosować komunikat
+  }
+
   const currentWeather = weather.current_weather;
   const currentInterpretation = getWeatherInterpretation(
     currentWeather.weathercode
   );
+
   return (
     <>
       <View style={s.meteo_basic}>
-        <MeteoBasic
+        <MeteoInfo
           dailyWeather={weather.daily}
           city={city}
           interpretation={currentInterpretation}

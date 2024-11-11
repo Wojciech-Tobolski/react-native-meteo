@@ -1,5 +1,4 @@
-import { StatusBar } from "expo-status-bar";
-import { Alert, ImageBackground, StyleSheet, Text, View } from "react-native";
+import { Alert, ImageBackground } from "react-native";
 import { s } from "./App.style";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 import { Home } from "./pages/Home/Home";
@@ -18,6 +17,9 @@ import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
 import { Linking, Platform } from "react-native";
+import Tabs from "./components/TabNawigator/TabNawigator";
+import { AuthAPI } from "./api/auth";
+import LoginPage from "./pages/Login/LoginPage";
 
 const Stack = createNativeStackNavigator();
 const navTheme = {
@@ -27,12 +29,20 @@ const navTheme = {
 };
 
 export default function App() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [coordinates, setCoordinates] = useState();
   const [city, setCity] = useState();
   const [weather, setWeather] = useState();
   const [isFontLoaded] = useFonts({
     "Alata-Regular": require("./assets/fonts/Alata-Regular.ttf"),
   });
+  useEffect(() => {
+    async function checkToken() {
+      const isValid = await AuthAPI.validateToken();
+      setIsAuthenticated(isValid);
+    }
+    checkToken();
+  }, []);
 
   useEffect(() => {
     getUserCoordinates();
@@ -46,9 +56,10 @@ export default function App() {
   }, []);
 
   useEffect(() => {
+    console.log("Coordinates changed:", coordinates);
     if (coordinates) {
-      fetchWeatherByCoords(coordinates);
       fetchCityByCoords(coordinates);
+      fetchWeatherByCoords(coordinates);
     }
   }, [coordinates]);
 
@@ -91,9 +102,17 @@ export default function App() {
     setWeather(weatherResponse);
   }
   async function fetchCityByCoords(coords) {
-    const cityResponse = await MeteoAPI.fetchCityByCoords(coords);
-    setCity(cityResponse);
+    console.log("Fetching city for coordinates:", coords);
+    try {
+      const cityResponse = await MeteoAPI.fetchCityByCoords(coords);
+      console.log("City response:", cityResponse);
+      setCity(cityResponse);
+    } catch (error) {
+      console.error("Error fetching city:", error); // To wyświetli błąd, jeśli wystąpi
+      Alert.alert("Error", "Nie udało się pobrać miasta.");
+    }
   }
+
   async function fetchCoordsByCity(city) {
     try {
       const coordsResponse = await MeteoAPI.fetchCoordsByCity(city);
@@ -124,23 +143,27 @@ export default function App() {
       >
         <SafeAreaProvider>
           <SafeAreaView style={s.container}>
-            {isFontLoaded && weather && (
-              <Stack.Navigator
-                screenOptions={{ headerShown: false, animation: "fade" }}
-                initialRouteName="Home"
-              >
-                <Stack.Screen name="Home">
+            <Stack.Navigator screenOptions={{ headerShown: false }}>
+              {isAuthenticated ? (
+                <Stack.Screen name="Tabs">
                   {() => (
-                    <Home
+                    <Tabs
                       weather={weather}
                       city={city}
-                      onSubmitSearch={fetchCoordsByCity}
+                      onSubmitSearch={(city) => fetchCityByCoords(city)}
                     />
                   )}
                 </Stack.Screen>
-                <Stack.Screen name="Forecasts" component={Forecasts} />
-              </Stack.Navigator>
-            )}
+              ) : (
+                <Stack.Screen name="Login">
+                  {() => (
+                    <LoginPage
+                      onLoginSuccess={() => setIsAuthenticated(true)}
+                    />
+                  )}
+                </Stack.Screen>
+              )}
+            </Stack.Navigator>
           </SafeAreaView>
         </SafeAreaProvider>
       </ImageBackground>
