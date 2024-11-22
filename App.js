@@ -20,6 +20,9 @@ import { Linking, Platform } from "react-native";
 import Tabs from "./components/TabNawigator/TabNawigator";
 import { AuthAPI } from "./api/auth";
 import LoginPage from "./pages/Login/LoginPage";
+import PlantDetails from "./pages/PlantDetails/PlantDetails";
+import AddUserPlant from "./pages/AddUserPlant/AddUserPlant";
+import UserPlantDetails from "./components/UserPlantDetails/UserPlantDetails";
 
 const Stack = createNativeStackNavigator();
 const navTheme = {
@@ -145,15 +148,23 @@ export default function App() {
           <SafeAreaView style={s.container}>
             <Stack.Navigator screenOptions={{ headerShown: false }}>
               {isAuthenticated ? (
-                <Stack.Screen name="Tabs">
-                  {() => (
-                    <Tabs
-                      weather={weather}
-                      city={city}
-                      onSubmitSearch={(city) => fetchCityByCoords(city)}
-                    />
-                  )}
-                </Stack.Screen>
+                <>
+                  <Stack.Screen name="Tabs">
+                    {() => (
+                      <Tabs
+                        weather={weather}
+                        city={city}
+                        onSubmitSearch={(city) => fetchCityByCoords(city)}
+                      />
+                    )}
+                  </Stack.Screen>
+                  <Stack.Screen name="PlantDetails" component={PlantDetails} />
+                  <Stack.Screen name="AddUserPlant" component={AddUserPlant} />
+                  <Stack.Screen
+                    name="UserPlantDetails"
+                    component={UserPlantDetails}
+                  />
+                </>
               ) : (
                 <Stack.Screen name="Login">
                   {() => (

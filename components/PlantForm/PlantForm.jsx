@@ -86,6 +86,7 @@ export default function PlantForm() {
   return (
     <View style={s.container}>
       <ScrollView>
+        <Button title="Dodaj roślinę" onPress={submitForm} />
         <Txt>Nazwa rośliny:</Txt>
         <TextInput
           value={name}
@@ -252,7 +253,6 @@ export default function PlantForm() {
           />
         )}
       </ScrollView>
-      <Button title="Dodaj roślinę" onPress={submitForm} />
     </View>
   );
 }

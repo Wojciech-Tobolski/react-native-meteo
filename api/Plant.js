@@ -20,4 +20,20 @@ export class PlantAPI {
       alert("Wystąpił błąd podczas dodawania rośliny");
     }
   }
+  static async addUserPlant(userPlantData) {
+    try {
+      const response = await axios.post(
+        `${API_URL}/user-plants`,
+        userPlantData
+      );
+      if (response.status === 201) {
+        alert("Roślina została dodana do Twojej kolekcji");
+      } else {
+        throw new Error("Błąd przy wysyłaniu danych użytkownika");
+      }
+    } catch (error) {
+      console.error("Error details:", error.toJSON());
+      alert("Wystąpił błąd podczas dodawania rośliny użytkownika");
+    }
+  }
 }

@@ -2,11 +2,11 @@ import { View } from "react-native";
 import { Txt } from "../../components/Txt/Txt";
 import PlantForm from "../../components/PlantForm/PlantForm";
 
-export function AddNewPlant() {
+export function AddNewPlant(plant) {
   return (
     <View>
       <Txt>Add new plant</Txt>
-      <PlantForm />
+      <PlantForm plant={plant} />
     </View>
   );
 }

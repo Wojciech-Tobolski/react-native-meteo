@@ -8,6 +8,7 @@ import { MeteoInfo } from "../../components/MeteoInfo/MeteoInfo";
 import { getWeatherInterpretation } from "../../utils/meteo-utils";
 import { MeteoAdvanced } from "../../components/MeteoAdvanced/MeteoAdvanced";
 import { SearchBar } from "../../components/SearchBar/SearchBar";
+import UserPlantList from "../../components/UserPlants/UserPlantsList";
 
 export function Home({ weather, city, onSubmitSearch }) {
   // Sprawdź, czy dane `weather` są dostępne
@@ -28,17 +29,13 @@ export function Home({ weather, city, onSubmitSearch }) {
           city={city}
           interpretation={currentInterpretation}
           temperature={Math.round(currentWeather.temperature)}
+          sunrise={weather.daily.sunrise[0].split("T")[1]}
+          sunset={weather.daily.sunset[0].split("T")[1]}
         />
       </View>
       <View style={s.search_bar_container}>
+        <UserPlantList />
         <SearchBar onSubmit={onSubmitSearch} />
-      </View>
-      <View style={s.meteo_advanced}>
-        <MeteoAdvanced
-          sunrise={weather.daily.sunrise[0].split("T")[1]}
-          sunset={weather.daily.sunset[0].split("T")[1]}
-          windspeed={currentWeather.windspeed}
-        />
       </View>
     </>
   );
