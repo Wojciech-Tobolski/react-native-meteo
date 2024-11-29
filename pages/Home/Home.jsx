@@ -33,9 +33,9 @@ export function Home({ weather, city, onSubmitSearch }) {
           sunset={weather.daily.sunset[0].split("T")[1]}
         />
       </View>
+      <Txt>Twoje rośliny</Txt>
       <View style={s.search_bar_container}>
         <UserPlantList />
-        <SearchBar onSubmit={onSubmitSearch} />
       </View>
     </>
   );

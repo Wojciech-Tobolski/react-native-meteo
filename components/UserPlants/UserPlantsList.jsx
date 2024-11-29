@@ -73,8 +73,8 @@ const UserPlantList = () => {
       <Image source={{ uri: item.custom_image_url }} style={styles.image} />
       <View style={styles.cardContent}>
         <Text style={styles.plantName}>{item.custom_name}</Text>
-        <Text>Ostatnie podlewanie: {item.last_watered || "Brak danych"}</Text>
-        <Text>{item.is_outdoor ? "Zewnątrz" : "Wewnątrz"}</Text>
+        {/* <Text>Ostatnie podlewanie: {item.last_watered || "Brak danych"}</Text>
+        <Text>{item.is_outdoor ? "Zewnątrz" : "Wewnątrz"}</Text> */}
       </View>
     </TouchableOpacity>
   );
@@ -93,6 +93,8 @@ const UserPlantList = () => {
       renderItem={renderItem}
       keyExtractor={(item) => item.id.toString()}
       contentContainerStyle={styles.container}
+      numColumns={2} // Number of columns fixed to 3
+      columnWrapperStyle={{ justifyContent: "flex-start" }} // Ensure the last item does not occupy full width
     />
   );
 };
@@ -107,12 +109,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   card: {
-    flexDirection: "row",
+    flexBasis: "43%",
+    margin: 10,
     alignItems: "center",
-    padding: 15,
     backgroundColor: "#fff",
     borderRadius: 10,
-    marginBottom: 10,
+    padding: 10,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -120,17 +122,19 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   image: {
-    width: 80,
-    height: 80,
+    width: 130,
+    height: 130,
     borderRadius: 10,
-    marginRight: 15,
+    marginBottom: 10,
   },
   cardContent: {
-    flex: 1,
+    alignItems: "center",
   },
   plantName: {
     fontWeight: "bold",
-    fontSize: 16,
+    fontSize: 14,
+    marginBottom: 5,
+    textAlign: "center",
   },
 });
 

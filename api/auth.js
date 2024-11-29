@@ -31,9 +31,10 @@ export class AuthAPI {
     }
     console.log("Odpowiedź logowania:", response.data);
 
-    const { access_token } = response.data;
+    const { access_token, user_id } = response.data;
 
     await AsyncStorage.setItem("token", access_token); // Zapis tokenu w AsyncStorage
+    await AsyncStorage.setItem("userId", user_id.toString());
     const storedToken = await AsyncStorage.getItem("token");
     console.log("Zapisany token:", storedToken);
     return access_token;
@@ -76,5 +77,14 @@ export class AuthAPI {
   // Wylogowanie użytkownika
   static async logout() {
     await AsyncStorage.removeItem("token"); // Usunięcie tokenu z AsyncStorage
+    await AsyncStorage.removeItem("userId"); // Usunięcie tokenu z AsyncStorage
+  }
+  // Pobieranie userId
+  static async getUserId() {
+    const userId = await AsyncStorage.getItem("userId");
+    if (!userId) {
+      throw new Error("Nie udało się pobrać userId z AsyncStorage.");
+    }
+    return userId;
   }
 }

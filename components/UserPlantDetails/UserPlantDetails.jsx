@@ -82,8 +82,15 @@ const UserPlantDetails = ({ route }) => {
         </View>
       </View>
 
-      <TouchableOpacity style={styles.diagnoseButton}>
-        <Text style={styles.diagnoseButtonText}>Diagnose for further info</Text>
+      <TouchableOpacity
+        style={styles.diagnoseButton}
+        onPress={() =>
+          navigation.navigate("AddMicrocontroller", {
+            plantId: plant.id, // Przekaż ID rośliny
+          })
+        }
+      >
+        <Text style={styles.diagnoseButtonText}>Add mikroassistant</Text>
       </TouchableOpacity>
 
       <View style={styles.sectionContainer}>

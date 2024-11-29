@@ -23,6 +23,8 @@ import LoginPage from "./pages/Login/LoginPage";
 import PlantDetails from "./pages/PlantDetails/PlantDetails";
 import AddUserPlant from "./pages/AddUserPlant/AddUserPlant";
 import UserPlantDetails from "./components/UserPlantDetails/UserPlantDetails";
+import axios from "axios";
+import AddMicrocontroller from "./components/AddMicrocontroller/AddMicrocontroller";
 
 const Stack = createNativeStackNavigator();
 const navTheme = {
@@ -91,7 +93,24 @@ export default function App() {
           projectId: Constants.expoConfig?.extra?.eas?.projectId,
         })
       ).data;
-      //send token to backend
+
+      const userId = await AsyncStorage.getItem("userId");
+
+      const sendTokenToBackend = async (token) => {
+        try {
+          await axios.post("http://192.168.1.32:8000/user/save-token", {
+            token: token,
+            userId: userId, // Użyj identyfikatora użytkownika
+          });
+        } catch (error) {
+          console.error("Failed to send token to backend:", error);
+        }
+      };
+
+      if (token) {
+        sendTokenToBackend(token);
+      }
+
       console.log("Token EXPO", token);
     } else {
       alert("Must use physical device for Push Notifications");
@@ -163,6 +182,10 @@ export default function App() {
                   <Stack.Screen
                     name="UserPlantDetails"
                     component={UserPlantDetails}
+                  />
+                  <Stack.Screen
+                    name="AddMicrocontroller"
+                    component={AddMicrocontroller}
                   />
                 </>
               ) : (
