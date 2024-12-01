@@ -24,7 +24,7 @@ import PlantDetails from "./pages/PlantDetails/PlantDetails";
 import AddUserPlant from "./pages/AddUserPlant/AddUserPlant";
 import UserPlantDetails from "./components/UserPlantDetails/UserPlantDetails";
 import axios from "axios";
-import AddMicrocontroller from "./components/AddMicrocontroller/AddMicrocontroller";
+import AddMicrocontroller from "./pages/AddMicrocontroller/AddMicrocontroller";
 
 const Stack = createNativeStackNavigator();
 const navTheme = {
