@@ -11,6 +11,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../confiq";
 
 const UserPlantDetails = ({ route }) => {
   const { plant, plantDetails } = route.params;
@@ -20,18 +21,15 @@ const UserPlantDetails = ({ route }) => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
-        alert("Brak autoryzacji. Zaloguj się ponownie.");
+        Alert.alert("Błąd", "Brak autoryzacji. Zaloguj się ponownie.");
         return;
       }
 
-      await axios.delete(
-        `http://192.168.1.32:8000/user-plants/deleted/${plant.id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
+      await axios.delete(`${API_URL}user-plants/deleted/${plant.id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       Alert.alert("Sukces", "Roślina została usunięta.", [
         {
           text: "OK",
@@ -39,15 +37,15 @@ const UserPlantDetails = ({ route }) => {
         },
       ]);
     } catch (error) {
-      console.error("Error deleting plant:", error);
-      alert("Wystąpił problem z usunięciem rośliny.");
+      console.error("Błąd podczas usuwania rośliny:", error);
+      Alert.alert("Błąd", "Wystąpił problem z usunięciem rośliny.");
     }
   };
 
   if (!plantDetails) {
     return (
       <View style={styles.errorContainer}>
-        <Text style={styles.errorText}>Plant details not available.</Text>
+        <Text style={styles.errorText}>Szczegóły rośliny są niedostępne.</Text>
       </View>
     );
   }
@@ -59,16 +57,8 @@ const UserPlantDetails = ({ route }) => {
           onPress={() => navigation.goBack()}
           style={styles.backButton}
         >
-          <Text style={styles.backButtonText}>{"<"}</Text>
+          <Text style={styles.backButtonText}>{"< Powrót"}</Text>
         </TouchableOpacity>
-        <View style={styles.headerActionButtonsContainer}>
-          <TouchableOpacity style={styles.editButton}>
-            <Text style={styles.editButtonText}>Edit</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.deleteButton} onPress={deletePlant}>
-            <Text style={styles.deleteButtonText}>Delete</Text>
-          </TouchableOpacity>
-        </View>
       </View>
 
       <View style={styles.headerContainer}>
@@ -76,81 +66,120 @@ const UserPlantDetails = ({ route }) => {
         <View style={styles.titleContainer}>
           <Text style={styles.title}>{plant.custom_name}</Text>
           <Text style={styles.subtitle}>
-            {plantDetails.plant_type || "Unknown Type"} •{" "}
-            {plantDetails.name || "Unknown Name"}
+            {plantDetails.plant_type || "Nieznany typ"} •{" "}
+            {plantDetails.name || "Nieznana nazwa"}
           </Text>
         </View>
       </View>
 
-      <TouchableOpacity
-        style={styles.diagnoseButton}
-        onPress={() =>
-          navigation.navigate("AddMicrocontroller", {
-            plantId: plant.id, // Przekaż ID rośliny
-          })
-        }
-      >
-        <Text style={styles.diagnoseButtonText}>Add mikroassistant</Text>
-      </TouchableOpacity>
+      {plant.has_microcontroller === false ? (
+        <TouchableOpacity
+          style={styles.diagnoseButton}
+          onPress={() =>
+            navigation.navigate("AddMicrocontroller", {
+              plantId: plant.id,
+            })
+          }
+        >
+          <Text style={styles.diagnoseButtonText}>Dodaj mikroasystenta</Text>
+        </TouchableOpacity>
+      ) : (
+        <TouchableOpacity
+          style={styles.diagnoseButton}
+          onPress={() =>
+            navigation.navigate("PlantConditions", {
+              plantId: plant.id,
+            })
+          }
+        >
+          <Text style={styles.diagnoseButtonText}>Pokaż warunki rośliny</Text>
+        </TouchableOpacity>
+      )}
 
       <View style={styles.sectionContainer}>
-        <Text style={styles.sectionTitle}>About </Text>
+        <Text style={styles.sectionTitle}>Opis</Text>
         <Text style={styles.aboutText}>
-          {plantDetails.description || "No information available."}
+          {plantDetails.description || "Brak informacji."}
         </Text>
       </View>
 
       <View style={styles.detailsContainer}>
-        <Text style={styles.sectionTitle}>Details </Text>
+        <Text style={styles.sectionTitle}>Szczegóły</Text>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Temperature: </Text>
+          <Text style={styles.detailTitle}>Temperatura: </Text>
           <Text style={styles.detailValue}>{`${
             plantDetails.min_temperature || "N/A"
           }°C - ${plantDetails.max_temperature || "N/A"}°C`}</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Light Requirements: </Text>
+          <Text style={styles.detailTitle}>Nasłonecznienie: </Text>
           <Text style={styles.detailValue}>
-            {plantDetails.light_requirements || "N/A"}
+            {plantDetails.sunlight || "Brak danych"}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Sunlight: </Text>
+          <Text style={styles.detailTitle}>Maksymalne nasłonecznienie: </Text>
           <Text style={styles.detailValue}>
-            {plantDetails.sunlight || "N/A"}
+            {plantDetails.max_sunlight || "Brak danych"} lux
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Watering Frequency: </Text>
+          <Text style={styles.detailTitle}>Minimalne nasłonecznienie: </Text>
+          <Text style={styles.detailValue}>
+            {plantDetails.min_sunlight || "Brak danych"} lux
+          </Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailTitle}>Wilgotność gleby: </Text>
+          <Text style={styles.detailValue}>
+            {plantDetails.min_soil_humidity || "N/A"}% -{" "}
+            {plantDetails.max_soil_humidity || "N/A"}%
+          </Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailTitle}>Wilgotność powietrza: </Text>
+          <Text style={styles.detailValue}>
+            {plantDetails.min_air_humidity || "N/A"}% -{" "}
+            {plantDetails.max_air_humidity || "N/A"}%
+          </Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailTitle}>Częstotliwość podlewania: </Text>
           <Text style={styles.detailValue}>
             {plantDetails.watering_frequency
-              ? `Every ${plantDetails.watering_frequency} days`
-              : "N/A"}
+              ? `${plantDetails.watering_frequency} dni`
+              : "Brak danych"}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Humidity Requirements: </Text>
+          <Text style={styles.detailTitle}>Typ gleby: </Text>
           <Text style={styles.detailValue}>
-            {plantDetails.humidity_requirements
-              ? `${plantDetails.humidity_requirements}%`
-              : "N/A"}
+            {plantDetails.soil_type || "Brak danych"}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Soil Type: </Text>
+          <Text style={styles.detailTitle}>Środowisko: </Text>
           <Text style={styles.detailValue}>
-            {plantDetails.soil_type || "N/A"}
+            {plantDetails.preferred_environment || "Nieokreślone"}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Repotting Frequency: </Text>
+          <Text style={styles.detailTitle}>Szkodniki: </Text>
           <Text style={styles.detailValue}>
-            {plantDetails.repotting_frequency || "N/A"}
+            {plantDetails.pests || "Brak szkodników"}
           </Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Pests: </Text>
-          <Text style={styles.detailValue}>{plantDetails.pests || "None"}</Text>
+          <Text style={styles.detailTitle}>Poziom trudności: </Text>
+          <Text style={styles.detailValue}>
+            {plantDetails.difficulty_level || "Brak danych"}
+          </Text>
+        </View>
+        <View style={styles.detailItem}>
+          <Text style={styles.detailTitle}>Wymagane czyszczenie: </Text>
+          <Text style={styles.detailValue}>
+            {plantDetails.cleaning_requirement || "Brak wymagań"}
+          </Text>
         </View>
       </View>
     </ScrollView>
@@ -174,32 +203,6 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 18,
     color: "#333",
-  },
-  headerActionButtonsContainer: {
-    flexDirection: "row",
-  },
-  editButton: {
-    backgroundColor: "#4CAF50",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-    marginRight: 10,
-  },
-  editButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
-  },
-  deleteButton: {
-    backgroundColor: "#f44336",
-    paddingVertical: 5,
-    paddingHorizontal: 10,
-    borderRadius: 5,
-  },
-  deleteButtonText: {
-    color: "#fff",
-    fontSize: 14,
-    fontWeight: "bold",
   },
   headerContainer: {
     alignItems: "center",

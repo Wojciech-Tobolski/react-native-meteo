@@ -12,6 +12,7 @@ import { Txt } from "../../components/Txt/Txt";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { API_URL } from "../../confiq";
 
 const UserPlantForm = ({ plant }) => {
   const [customName, setCustomName] = useState(plant?.name || "");
@@ -50,15 +51,11 @@ const UserPlantForm = ({ plant }) => {
         });
       }
 
-      const response = await axios.post(
-        "http://192.168.1.32:8000/user-plants",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}user-plants`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       alert("Roślina została dodana do Twojej kolekcji!");
     } catch (error) {
       console.error(error);

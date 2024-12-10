@@ -6,10 +6,12 @@ import {
   TouchableOpacity,
   Alert,
   FlatList,
+  StyleSheet,
 } from "react-native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../confiq";
 
 const AddMicrocontroller = ({ route }) => {
   const { plantId } = route.params; // Pobieramy ID rośliny przekazane z poprzedniego widoku
@@ -27,7 +29,7 @@ const AddMicrocontroller = ({ route }) => {
       }
 
       const response = await axios.get(
-        "http://192.168.1.32:8000/micro_assistant/user-microcontrollers",
+        `${API_URL}micro_assistant/user-microcontrollers`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -60,7 +62,7 @@ const AddMicrocontroller = ({ route }) => {
       }
 
       const response = await axios.post(
-        "http://192.168.1.32:8000/micro_assistant/add-or-assign",
+        `${API_URL}micro_assistant/add-or-assign`,
         {
           controller_id: microcontrollerId,
           user_plant_id: plantId,
@@ -78,6 +80,7 @@ const AddMicrocontroller = ({ route }) => {
           onPress: () => navigation.navigate("Home"), // Przekierowanie na stronę główną
         },
       ]);
+      fetchUserMicrocontrollers(); // Odśwież listę mikrokontrolerów
     } catch (error) {
       console.error("Error adding new microcontroller:", error);
       Alert.alert("Błąd", "Nie udało się dodać nowego mikrokontrolera.");
@@ -94,7 +97,7 @@ const AddMicrocontroller = ({ route }) => {
       }
 
       const response = await axios.post(
-        "http://192.168.1.32:8000/micro_assistant/add-or-assign",
+        `${API_URL}micro_assistant/add-or-assign`,
         {
           controller_id: controllerId,
           user_plant_id: plantId,
@@ -112,6 +115,7 @@ const AddMicrocontroller = ({ route }) => {
           onPress: () => navigation.navigate("Home"), // Przekierowanie na stronę główną
         },
       ]);
+      fetchUserMicrocontrollers(); // Odśwież listę mikrokontrolerów
     } catch (error) {
       console.error("Error assigning microcontroller:", error);
       Alert.alert("Błąd", "Nie udało się przypisać mikrokontrolera.");
@@ -127,15 +131,14 @@ const AddMicrocontroller = ({ route }) => {
         return;
       }
 
-      const response = await axios.post(
-        "http://192.168.1.32:8000/micro_assistant/unassign-plant",
+      await axios.post(
+        `${API_URL}micro_assistant/unassign-plant`,
         {
           controller_id: controllerId, // Dane w formacie JSON
         },
         {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json", // Ustaw nagłówek
           },
         }
       );
@@ -148,106 +151,144 @@ const AddMicrocontroller = ({ route }) => {
     }
   };
 
-  // Wyświetlenie strzałki "Cofnij"
-  const handleGoBack = () => {
-    navigation.goBack();
-  };
-
   return (
-    <View style={{ padding: 20, flex: 1 }}>
+    <View style={styles.container}>
       {/* Strzałka "Cofnij" */}
-      <TouchableOpacity onPress={handleGoBack} style={{ marginBottom: 20 }}>
-        <Text style={{ fontSize: 16, color: "#007BFF" }}>← Wróć</Text>
+      <TouchableOpacity
+        onPress={() => navigation.goBack()}
+        style={styles.backButton}
+      >
+        <Text style={styles.backButtonText}>← Wróć</Text>
       </TouchableOpacity>
 
       {/* Pole tekstowe dla nowego mikrokontrolera */}
-      <Text style={{ fontSize: 18, marginBottom: 10 }}>
-        Dodaj nowy mikrokontroler
-      </Text>
+      <Text style={styles.title}>Dodaj nowy mikrokontroler</Text>
       <TextInput
-        style={{
-          borderWidth: 1,
-          padding: 10,
-          marginBottom: 20,
-          borderRadius: 5,
-          fontSize: 16,
-        }}
+        style={styles.input}
         placeholder="ID mikrokontrolera"
         value={microcontrollerId}
         onChangeText={setMicrocontrollerId}
       />
       <TouchableOpacity
-        style={{
-          backgroundColor: "#4CAF50",
-          padding: 15,
-          alignItems: "center",
-          borderRadius: 5,
-          marginBottom: 20,
-        }}
+        style={styles.addButton}
         onPress={handleAddNewMicrocontroller}
       >
-        <Text style={{ color: "#fff", fontSize: 16 }}>
-          Dodaj nowy mikrokontroler
-        </Text>
+        <Text style={styles.addButtonText}>Dodaj nowy mikrokontroler</Text>
       </TouchableOpacity>
 
       {/* Lista mikrokontrolerów */}
-      <Text style={{ fontSize: 18, marginBottom: 10 }}>
-        Twoje mikrokontrolery:
-      </Text>
-      <FlatList
-        data={userMicrocontrollers}
-        keyExtractor={(item) => item.controller_id}
-        renderItem={({ item }) => (
-          <View
-            style={{
-              padding: 10,
-              borderBottomWidth: 1,
-              borderBottomColor: "#ccc",
-              flexDirection: "row",
-              justifyContent: "space-between",
-              alignItems: "center",
-            }}
-          >
-            <View>
-              <Text>ID: {item.controller_id}</Text>
-              <Text>
-                Przypisana roślina:{" "}
-                {item.assigned_plant ? item.assigned_plant.custom_name : "Brak"}
-              </Text>
+      <Text style={styles.title}>Twoje mikrokontrolery:</Text>
+      {userMicrocontrollers.length === 0 ? (
+        <Text style={styles.noMicrocontrollersText}>
+          Nie masz jeszcze dodanego żadnego mikrokontrolera.
+        </Text>
+      ) : (
+        <FlatList
+          data={userMicrocontrollers}
+          keyExtractor={(item) => item.controller_id}
+          renderItem={({ item }) => (
+            <View style={styles.microcontrollerItem}>
+              <View>
+                <Text>ID: {item.controller_id}</Text>
+                <Text>
+                  Przypisana roślina:{" "}
+                  {item.assigned_plant
+                    ? item.assigned_plant.custom_name
+                    : "Brak"}
+                </Text>
+              </View>
+              {item.assigned_plant ? (
+                <TouchableOpacity
+                  style={styles.unassignButton}
+                  onPress={() =>
+                    handleUnassignMicrocontroller(item.controller_id)
+                  }
+                >
+                  <Text style={styles.unassignButtonText}>Odepnij</Text>
+                </TouchableOpacity>
+              ) : (
+                <TouchableOpacity
+                  style={styles.assignButton}
+                  onPress={() =>
+                    handleAddMicrocontrollerFromList(item.controller_id)
+                  }
+                >
+                  <Text style={styles.assignButtonText}>Dodaj</Text>
+                </TouchableOpacity>
+              )}
             </View>
-            {item.assigned_plant ? (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#f44336",
-                  padding: 10,
-                  borderRadius: 5,
-                }}
-                onPress={() =>
-                  handleUnassignMicrocontroller(item.controller_id)
-                }
-              >
-                <Text style={{ color: "#fff" }}>Odepnij</Text>
-              </TouchableOpacity>
-            ) : (
-              <TouchableOpacity
-                style={{
-                  backgroundColor: "#4CAF50",
-                  padding: 10,
-                  borderRadius: 5,
-                }}
-                onPress={() =>
-                  handleAddMicrocontrollerFromList(item.controller_id)
-                }
-              >
-                <Text style={{ color: "#fff" }}>Dodaj</Text>
-              </TouchableOpacity>
-            )}
-          </View>
-        )}
-      />
+          )}
+        />
+      )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+    padding: 20,
+  },
+  backButton: {
+    marginBottom: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#007BFF",
+  },
+  title: {
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    padding: 10,
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  addButton: {
+    backgroundColor: "#4CAF50",
+    padding: 15,
+    alignItems: "center",
+    borderRadius: 5,
+    marginBottom: 20,
+  },
+  addButtonText: {
+    color: "#fff",
+    fontSize: 16,
+  },
+  microcontrollerItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  noMicrocontrollersText: {
+    fontSize: 16,
+    color: "#888",
+    textAlign: "center",
+    marginTop: 20,
+  },
+  unassignButton: {
+    backgroundColor: "#f44336",
+    padding: 10,
+    borderRadius: 5,
+  },
+  unassignButtonText: {
+    color: "#fff",
+  },
+  assignButton: {
+    backgroundColor: "#4CAF50",
+    padding: 10,
+    borderRadius: 5,
+  },
+  assignButtonText: {
+    color: "#fff",
+  },
+});
 
 export default AddMicrocontroller;

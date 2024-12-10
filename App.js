@@ -1,8 +1,5 @@
 import { Alert, ImageBackground } from "react-native";
-import { s } from "./App.style";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
-import { Home } from "./pages/Home/Home";
-import { Forecasts } from "./pages/Forecasts/Forecasts";
 import backgroundImage from "./assets/background.png";
 import {
   requestForegroundPermissionsAsync,
@@ -16,15 +13,13 @@ import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import * as Notifications from "expo-notifications";
 import * as Device from "expo-device";
 import Constants from "expo-constants";
-import { Linking, Platform } from "react-native";
-import Tabs from "./components/TabNawigator/TabNawigator";
+import { Platform } from "react-native";
 import { AuthAPI } from "./api/auth";
-import LoginPage from "./pages/Login/LoginPage";
-import PlantDetails from "./pages/PlantDetails/PlantDetails";
-import AddUserPlant from "./pages/AddUserPlant/AddUserPlant";
-import UserPlantDetails from "./components/UserPlantDetails/UserPlantDetails";
 import axios from "axios";
-import AddMicrocontroller from "./pages/AddMicrocontroller/AddMicrocontroller";
+import { API_URL } from "./confiq";
+import { AppNavigator } from "./navigation";
+import { StyleSheet } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const Stack = createNativeStackNavigator();
 const navTheme = {
@@ -88,30 +83,34 @@ export default function App() {
           return;
         }
       }
-      token = (
-        await Notifications.getExpoPushTokenAsync({
-          projectId: Constants.expoConfig?.extra?.eas?.projectId,
-        })
-      ).data;
 
-      const userId = await AsyncStorage.getItem("userId");
+      try {
+        token = (
+          await Notifications.getExpoPushTokenAsync({
+            projectId: Constants.expoConfig?.extra?.eas?.projectId,
+          })
+        ).data;
 
-      const sendTokenToBackend = async (token) => {
-        try {
-          await axios.post("http://192.168.1.32:8000/user/save-token", {
+        const userId = await AsyncStorage.getItem("userId");
+
+        // Poprawiona ścieżka endpointu
+        await axios.post(
+          `${API_URL}user/save-token`,
+          {
             token: token,
-            userId: userId, // Użyj identyfikatora użytkownika
-          });
-        } catch (error) {
-          console.error("Failed to send token to backend:", error);
-        }
-      };
+            userId: userId,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${await AsyncStorage.getItem("token")}`,
+            },
+          }
+        );
 
-      if (token) {
-        sendTokenToBackend(token);
+        console.log("Token EXPO saved successfully:", token);
+      } catch (error) {
+        console.error("Error with notifications setup:", error);
       }
-
-      console.log("Token EXPO", token);
     } else {
       alert("Must use physical device for Push Notifications");
     }
@@ -159,48 +158,33 @@ export default function App() {
   return (
     <NavigationContainer theme={navTheme}>
       <ImageBackground
-        imageStyle={s.img}
-        style={s.img_background}
         source={backgroundImage}
+        style={styles.backgroundImage}
+        resizeMode="cover"
       >
         <SafeAreaProvider>
-          <SafeAreaView style={s.container}>
-            <Stack.Navigator screenOptions={{ headerShown: false }}>
-              {isAuthenticated ? (
-                <>
-                  <Stack.Screen name="Tabs">
-                    {() => (
-                      <Tabs
-                        weather={weather}
-                        city={city}
-                        onSubmitSearch={(city) => fetchCityByCoords(city)}
-                      />
-                    )}
-                  </Stack.Screen>
-                  <Stack.Screen name="PlantDetails" component={PlantDetails} />
-                  <Stack.Screen name="AddUserPlant" component={AddUserPlant} />
-                  <Stack.Screen
-                    name="UserPlantDetails"
-                    component={UserPlantDetails}
-                  />
-                  <Stack.Screen
-                    name="AddMicrocontroller"
-                    component={AddMicrocontroller}
-                  />
-                </>
-              ) : (
-                <Stack.Screen name="Login">
-                  {() => (
-                    <LoginPage
-                      onLoginSuccess={() => setIsAuthenticated(true)}
-                    />
-                  )}
-                </Stack.Screen>
-              )}
-            </Stack.Navigator>
+          <SafeAreaView style={styles.container} edges={["top"]}>
+            <AppNavigator
+              isAuthenticated={isAuthenticated}
+              onLoginSuccess={() => setIsAuthenticated(true)}
+              weather={weather}
+              city={city}
+              onSubmitSearch={(city) => fetchCityByCoords(city)}
+            />
           </SafeAreaView>
         </SafeAreaProvider>
       </ImageBackground>
     </NavigationContainer>
   );
 }
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+  backgroundImage: {
+    flex: 1,
+    width: "100%",
+    height: "100%",
+  },
+});

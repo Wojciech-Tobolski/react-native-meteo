@@ -10,13 +10,14 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import { Txt } from "../Txt/Txt";
+import { API_URL } from "../../confiq";
 const PlantGrid = () => {
   const [plants, setPlants] = useState([]);
   const navigation = useNavigation();
 
   const fetchPlants = async () => {
     try {
-      const response = await axios.get("http://192.168.1.32:8000/admin/plants"); // Zaktualizuj URL do swojego API
+      const response = await axios.get(`${API_URL}admin/plants`); // Zaktualizuj URL do swojego API
       setPlants(response.data);
     } catch (error) {
       console.error("Błąd przy pobieraniu roślin:", error);

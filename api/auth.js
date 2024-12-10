@@ -1,8 +1,9 @@
 // AuthAPI.js
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../confiq";
 
-const API_URL = "http://192.168.1.32:8000/auth";
+const API_URLL = `${API_URL}auth`;
 
 export class AuthAPI {
   // Rejestracja użytkownika
@@ -22,7 +23,7 @@ export class AuthAPI {
     params.append("username", credentials.username);
     params.append("password", credentials.password);
 
-    const response = await axios.post(`${API_URL}/token`, params, {
+    const response = await axios.post(`${API_URLL}/token`, params, {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
     });
 
@@ -49,7 +50,7 @@ export class AuthAPI {
         return false;
       }
 
-      const response = await axios.get(`${API_URL}/validate-token`, {
+      const response = await axios.get(`${API_URLL}/validate-token`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -64,7 +65,7 @@ export class AuthAPI {
   static async fetchUserData() {
     const token = await AsyncStorage.getItem("token");
 
-    const response = await axios.get(`${API_URL}/me`, {
+    const response = await axios.get(`${API_URLL}/me`, {
       headers: { Authorization: `Bearer ${token}` },
     });
 

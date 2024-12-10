@@ -11,6 +11,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
+import { API_URL } from "../../confiq";
 
 const UserPlantList = () => {
   const [userPlants, setUserPlants] = useState([]);
@@ -26,7 +27,7 @@ const UserPlantList = () => {
       }
 
       const response = await axios.get(
-        "http://192.168.1.32:8000/user-plants/show-user-plants",
+        `${API_URL}user-plants/show-user-plants`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -44,9 +45,7 @@ const UserPlantList = () => {
 
   const getPlantDetailsById = async (plantId) => {
     try {
-      const response = await axios.get(
-        `http://192.168.1.32:8000/admin/plant/${plantId}`
-      );
+      const response = await axios.get(`${API_URL}admin/plant/${plantId}`);
       return response.data;
     } catch (error) {
       console.error("Error fetching plant details:", error);

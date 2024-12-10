@@ -13,6 +13,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { API_URL } from "../../confiq";
 
 const AddUserPlant = ({ route, navigation }) => {
   const { plant } = route.params;
@@ -64,7 +65,7 @@ const AddUserPlant = ({ route, navigation }) => {
       console.log("Wysyłane dane:", formData);
 
       const response = await axios.post(
-        "http://192.168.1.32:8000/user-plants/add_new_user_plant",
+        `${API_URL}user-plants/add_new_user_plant`,
         formData,
         {
           headers: {
