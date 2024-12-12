@@ -1,5 +1,5 @@
 // PlantDetails.js
-import React from "react";
+import React, { useLayoutEffect } from "react";
 import {
   View,
   Image,
@@ -135,6 +135,13 @@ const PlantDetails = ({ route }) => {
 };
 
 const styles = StyleSheet.create({
+  backButton: {
+    marginBottom: 20,
+  },
+  backButtonText: {
+    fontSize: 16,
+    color: "#007BFF",
+  },
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
@@ -195,6 +202,7 @@ const styles = StyleSheet.create({
     marginLeft: 12,
     fontSize: 16,
     lineHeight: 24,
+    color: "#666",
   },
   section: {
     backgroundColor: "white",

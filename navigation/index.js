@@ -13,6 +13,7 @@ import AddMicrocontroller from "../pages/AddMicrocontroller/AddMicrocontroller";
 import PlantConditions from "../pages/PlantConditions/PlantConditions";
 import PlantConditionsChart from "../pages/PlantGraphs/PlantGraphs";
 import NotificationSettings from "../components/NotificationSettings/NotificationSettings";
+import { NotificationsScreen } from "../pages/Notifications/NotificationsScreen";
 import Tabs from "../components/TabNawigator/TabNawigator";
 
 const Stack = createNativeStackNavigator();
@@ -75,7 +76,7 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Szczegóły rośliny",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
@@ -85,7 +86,7 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Dodaj roślinę",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
@@ -95,7 +96,7 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Szczegóły mojej rośliny",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
@@ -105,7 +106,7 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Dodaj mikrokontroler",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
@@ -115,7 +116,7 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Warunki rośliny",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
@@ -125,17 +126,17 @@ export const AppNavigator = ({
         options={{
           headerTitle: "Wykresy",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
 
       <Stack.Screen
-        name="NotificationSettings"
-        component={NotificationSettings}
+        name="Notifications"
+        component={NotificationsScreen}
         options={{
           headerTitle: "Ustawienia powiadomień",
           headerTitleAlign: "center",
-          headerShown: true,
+          headerShown: false,
         }}
       />
     </Stack.Navigator>

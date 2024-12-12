@@ -15,10 +15,7 @@ export class UserPlantAPI {
 
   static async addUserPlant(userPlantData) {
     try {
-      const response = await axios.post(
-        `${API_URLL}/user-plants`,
-        userPlantData
-      );
+      const response = await axios.post(`${API_URLL}`, userPlantData);
       if (response.status === 201) {
         alert("Roślina została dodana do Twojej kolekcji");
       } else {
@@ -31,7 +28,7 @@ export class UserPlantAPI {
   }
 
   static async deleteUserPlant(token, plantId) {
-    const response = await axios.delete(`${API_URL}/${plantId}`, {
+    const response = await axios.delete(`${API_URLL}/${plantId}`, {
       headers: {
         Authorization: `Bearer ${token}`,
       },

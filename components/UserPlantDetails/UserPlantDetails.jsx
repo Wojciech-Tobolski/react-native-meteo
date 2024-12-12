@@ -13,6 +13,7 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../confiq";
 import { UserPlantAPI } from "../../api/user-plants";
+import { Ionicons } from "@expo/vector-icons";
 
 const UserPlantDetails = ({ route }) => {
   const { plant, plantDetails } = route.params;
@@ -27,7 +28,7 @@ const UserPlantDetails = ({ route }) => {
       }
 
       const status = await UserPlantAPI.deleteUserPlant(token, plantId);
-      if (status === 200) {
+      if (status === 204) {
         Alert.alert("Sukces", "Roślina została usunięta.", [
           {
             text: "OK",
@@ -59,6 +60,12 @@ const UserPlantDetails = ({ route }) => {
           style={styles.backButton}
         >
           <Text style={styles.backButtonText}>{"< Powrót"}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => deletePlant(plant.id, navigation)}
+          style={styles.deleteButton}
+        >
+          <Ionicons name="trash-outline" size={24} color="#ff6666" />
         </TouchableOpacity>
       </View>
 
@@ -240,6 +247,9 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#f44336",
     textAlign: "center",
+  },
+  deleteButton: {
+    padding: 10,
   },
 });
 
