@@ -1,24 +1,22 @@
-// UserPlantForm.js
 import React, { useState } from "react";
 import {
   View,
   TextInput,
-  Button,
   TouchableOpacity,
   StyleSheet,
   Image,
+  SafeAreaView,
 } from "react-native";
 import { Txt } from "../../components/Txt/Txt";
-import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../confiq";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AddUserPlant = ({ route, navigation }) => {
   const { plant } = route.params;
   const [customName, setCustomName] = useState(plant?.name || "");
-  const [isOutdoor, setIsOutdoor] = useState(false);
   const [selectedImage, setSelectedImage] = useState(
     { uri: plant?.image_url } || null
   );
@@ -42,7 +40,6 @@ const AddUserPlant = ({ route, navigation }) => {
     }
 
     try {
-      // Uzyskaj token autoryzacyjny z AsyncStorage
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         alert("Brak autoryzacji. Zaloguj się ponownie.");
@@ -52,28 +49,21 @@ const AddUserPlant = ({ route, navigation }) => {
       const formData = new FormData();
       formData.append("plant_id", plant.id);
       formData.append("custom_name", customName);
-      formData.append("is_outdoor", isOutdoor);
 
       if (selectedImage && selectedImage.uri) {
         formData.append("custom_image", {
           uri: selectedImage.uri,
-          type: "image/jpeg", // Typ obrazu (domyślnie image/jpeg)
-          name: "user_plant.jpg", // Nazwa pliku
+          type: "image/jpeg",
+          name: "user_plant.jpg",
         });
       }
 
-      console.log("Wysyłane dane:", formData);
-
-      const response = await axios.post(
-        `${API_URL}user-plants/add_new_user_plant`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-            Authorization: `Bearer ${token}`, // Dodanie tokenu do nagłówka
-          },
-        }
-      );
+      const response = await axios.post(`${API_URL}my-plants/`, formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
       if (response.status === 201) {
         alert("Roślina została dodana do Twojej kolekcji!");
@@ -88,65 +78,170 @@ const AddUserPlant = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <Txt>Nazwa rośliny:</Txt>
-      <TextInput
-        value={customName}
-        onChangeText={setCustomName}
-        placeholder="Wpisz nazwę rośliny"
-        style={styles.input}
-      />
+    <SafeAreaView style={styles.container}>
+      {/* Header z przyciskiem powrotu */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.goBack()}
+        >
+          <MaterialCommunityIcons name="arrow-left" size={24} color="#2e7d32" />
+        </TouchableOpacity>
+        <Txt style={styles.headerTitle}>Dodaj swoją roślinę</Txt>
+      </View>
 
-      <Txt>Czy roślina jest na zewnątrz?</Txt>
-      <TouchableOpacity
-        onPress={() => setIsOutdoor(!isOutdoor)}
-        style={styles.checkboxContainer}
-      >
-        <MaterialIcons
-          name={isOutdoor ? "check-box" : "check-box-outline-blank"}
-          size={24}
-          color="black"
-        />
-        <Txt>{isOutdoor ? "Tak" : "Nie"}</Txt>
-      </TouchableOpacity>
+      <View style={styles.content}>
+        {/* Sekcja ze zdjęciem */}
+        <View style={styles.imageSection}>
+          {selectedImage ? (
+            <Image
+              source={{ uri: selectedImage.uri }}
+              style={styles.plantImage}
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <MaterialCommunityIcons
+                name="image-plus"
+                size={50}
+                color="#ccc"
+              />
+            </View>
+          )}
+          <TouchableOpacity
+            onPress={pickImage}
+            style={styles.imagePickerButton}
+          >
+            <MaterialCommunityIcons name="camera" size={24} color="white" />
+            <Txt style={styles.imagePickerText}>
+              {selectedImage ? "Zmień zdjęcie" : "Dodaj zdjęcie"}
+            </Txt>
+          </TouchableOpacity>
+        </View>
 
-      <TouchableOpacity onPress={pickImage} style={styles.imagePickerButton}>
-        <Txt>Zmień zdjęcie rośliny</Txt>
-      </TouchableOpacity>
-      {selectedImage && (
-        <Image
-          source={{ uri: selectedImage.uri }}
-          style={{ width: 100, height: 100, marginVertical: 10 }}
-        />
-      )}
+        {/* Sekcja z nazwą */}
+        <View style={styles.inputSection}>
+          <View style={styles.inputHeader}>
+            <MaterialCommunityIcons name="flower" size={24} color="#2e7d32" />
+            <Txt style={styles.inputLabel}>Nazwa rośliny</Txt>
+          </View>
+          <TextInput
+            value={customName}
+            onChangeText={setCustomName}
+            placeholder="Wpisz nazwę swojej rośliny"
+            style={styles.input}
+            placeholderTextColor="#999"
+          />
+        </View>
 
-      <Button title="Dodaj roślinę" onPress={handleAddUserPlant} />
-    </View>
+        {/* Przycisk dodawania */}
+        <TouchableOpacity style={styles.addButton} onPress={handleAddUserPlant}>
+          <MaterialCommunityIcons name="plus" size={24} color="white" />
+          <Txt style={styles.addButtonText}>Dodaj do kolekcji</Txt>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    padding: 20,
+    flex: 1,
+    backgroundColor: "#f5f5f5",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    padding: 16,
+    backgroundColor: "white",
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  backButton: {
+    padding: 8,
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 16,
+    color: "#2e7d32",
+  },
+  content: {
+    flex: 1,
+    padding: 16,
+  },
+  imageSection: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  plantImage: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    marginBottom: 16,
+  },
+  imagePlaceholder: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 16,
+  },
+  imagePickerButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#4CAF50",
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 25,
+    elevation: 3,
+  },
+  imagePickerText: {
+    color: "white",
+    marginLeft: 8,
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  inputSection: {
+    backgroundColor: "white",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 24,
+    elevation: 2,
+  },
+  inputHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginLeft: 8,
+    color: "#2e7d32",
   },
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 10,
-    marginVertical: 10,
-    borderRadius: 5,
+    borderColor: "#e0e0e0",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#fafafa",
   },
-  checkboxContainer: {
+  addButton: {
     flexDirection: "row",
     alignItems: "center",
-    marginVertical: 10,
+    justifyContent: "center",
+    backgroundColor: "#2e7d32",
+    padding: 16,
+    borderRadius: 12,
+    elevation: 4,
   },
-  imagePickerButton: {
-    marginVertical: 10,
-    padding: 10,
-    backgroundColor: "#007BFF",
-    borderRadius: 5,
-    alignItems: "center",
+  addButtonText: {
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    marginLeft: 8,
   },
 });
 

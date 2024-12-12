@@ -12,6 +12,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useFocusEffect } from "@react-navigation/native";
 import { useNavigation } from "@react-navigation/native";
 import { API_URL } from "../../confiq";
+import { UserPlantAPI } from "../../api/user-plants";
+import { PlantAPI } from "../../api/plants";
 
 const UserPlantList = () => {
   const [userPlants, setUserPlants] = useState([]);
@@ -23,18 +25,12 @@ const UserPlantList = () => {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
         alert("Brak autoryzacji. Zaloguj się ponownie.");
+        setLoading(false);
         return;
       }
 
-      const response = await axios.get(
-        `${API_URL}user-plants/show-user-plants`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setUserPlants(response.data);
+      const plants = await UserPlantAPI.getUserPlants(token);
+      setUserPlants(plants);
     } catch (error) {
       console.error("Error fetching user plants:", error);
       alert("Wystąpił problem z pobraniem roślin użytkownika.");
@@ -43,14 +39,13 @@ const UserPlantList = () => {
     }
   };
 
-  const getPlantDetailsById = async (plantId) => {
-    try {
-      const response = await axios.get(`${API_URL}admin/plant/${plantId}`);
-      return response.data;
-    } catch (error) {
-      console.error("Error fetching plant details:", error);
-      return null;
+  const handlePressPlant = async (item) => {
+    const plantDetails = await PlantAPI.getPlantDetailsById(item.plant_id);
+    if (!plantDetails) {
+      alert("Nie udało się pobrać danych rośliny.");
+      return;
     }
+    navigation.navigate("UserPlantDetails", { plant: item, plantDetails });
   };
 
   // Use useFocusEffect to refresh list when screen is focused
@@ -61,22 +56,29 @@ const UserPlantList = () => {
     }, [])
   );
 
-  const renderItem = ({ item }) => (
-    <TouchableOpacity
-      style={styles.card}
-      onPress={async () => {
-        const plantDetails = await getPlantDetailsById(item.plant_id); // Pobierz szczegóły rośliny
-        navigation.navigate("UserPlantDetails", { plant: item, plantDetails });
-      }}
-    >
-      <Image source={{ uri: item.custom_image_url }} style={styles.image} />
-      <View style={styles.cardContent}>
-        <Text style={styles.plantName}>{item.custom_name}</Text>
-        {/* <Text>Ostatnie podlewanie: {item.last_watered || "Brak danych"}</Text>
-        <Text>{item.is_outdoor ? "Zewnątrz" : "Wewnątrz"}</Text> */}
-      </View>
-    </TouchableOpacity>
-  );
+  const renderItem = ({ item }) => {
+    const imageUrl = item.custom_image_url || "https://via.placeholder.com/130";
+
+    // Dodaj zabezpieczenie przed nieprawidłowym URI
+    const validImageUrl = imageUrl.startsWith("http")
+      ? imageUrl
+      : "https://via.placeholder.com/130";
+    return (
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => handlePressPlant(item)}
+      >
+        <Image
+          source={{ uri: validImageUrl }}
+          style={styles.image}
+          defaultSource={require("../../assets/placeholder.png")} // Dodaj domyślny obraz
+        />
+        <View style={styles.cardContent}>
+          <Text style={styles.plantName}>{item.custom_name}</Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   if (loading) {
     return (

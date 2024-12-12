@@ -30,7 +30,7 @@ const PlantConditions = ({ route }) => {
       }
 
       const response = await axios.get(
-        `${API_URL}micro_assistant/latest-sensor-data/${plantId}`,
+        `${API_URL}devices/data/${plantId}/latest`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

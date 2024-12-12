@@ -1,41 +1,64 @@
-import React from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import React, { useEffect } from "react";
+import { View, TouchableOpacity, StyleSheet, Alert } from "react-native";
 import { Txt } from "../../components/Txt/Txt";
 import { useNavigation } from "@react-navigation/native";
-import { AuthAPI } from "../../api/auth";
+import { useAuth } from "../../hooks/useAuth";
 import { LogOut } from "lucide-react-native";
 
-export function Profile() {
+const Profile = () => {
   const navigation = useNavigation();
+  const auth = useAuth(); // Pobieramy cały obiekt auth
+
+  useEffect(() => {
+    console.log("Profile: Current auth state:", auth.isAuthenticated);
+  }, [auth.isAuthenticated]);
 
   const handleLogout = async () => {
+    console.log("Profile: Starting logout");
     try {
-      await AuthAPI.logout();
+      await auth.logout();
+      console.log(
+        "Profile: Logout completed, auth state:",
+        auth.isAuthenticated
+      );
 
-      const parentNavigator = navigation.getParent();
-      console.log("Parent Navigator State:", parentNavigator?.getState());
-
-      if (!parentNavigator) {
-        console.error("Nie można znaleźć nadrzędnego nawigatora.");
-        return;
+      // Znajdź root navigator
+      let rootNav = navigation;
+      while (rootNav.getParent()) {
+        rootNav = rootNav.getParent();
       }
+      console.log("Profile: Found root navigator");
 
-      parentNavigator.reset({
+      // Reset nawigacji
+      rootNav.reset({
         index: 0,
         routes: [{ name: "Login" }],
       });
     } catch (error) {
-      console.error("Błąd wylogowania:", error);
+      console.error("Profile: Logout error:", error);
+      Alert.alert("Błąd", "Nie udało się wylogować. Spróbuj ponownie.");
     }
+  };
+
+  const confirmLogout = () => {
+    Alert.alert("Potwierdzenie", "Czy na pewno chcesz się wylogować?", [
+      { text: "Anuluj", style: "cancel" },
+      {
+        text: "Wyloguj",
+        onPress: handleLogout,
+        style: "destructive",
+      },
+    ]);
   };
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
+      <TouchableOpacity style={styles.logoutButton} onPress={confirmLogout}>
         <LogOut color="#fff" size={18} />
         <Txt style={styles.logoutText}>Wyloguj</Txt>
       </TouchableOpacity>
-      <Txt style={styles.title}>Your profile</Txt>
+
+      <Txt style={styles.title}>Ustawienia profilu</Txt>
       <TouchableOpacity
         onPress={() => navigation.navigate("NotificationSettings")}
         style={styles.settingButton}
@@ -44,13 +67,13 @@ export function Profile() {
       </TouchableOpacity>
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
-    backgroundColor: "#fff",
+    backgroundColor: "rgba(245, 245, 245, 0.4)",
   },
   logoutButton: {
     position: "absolute",
@@ -77,6 +100,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     marginBottom: 20,
+    color: "#333",
   },
   settingButton: {
     backgroundColor: "#007AFF",
@@ -99,3 +123,5 @@ const styles = StyleSheet.create({
     fontWeight: "600",
   },
 });
+
+export default Profile;

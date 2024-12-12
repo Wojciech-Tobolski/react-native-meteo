@@ -12,12 +12,13 @@ import { useNavigation } from "@react-navigation/native";
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { API_URL } from "../../confiq";
+import { UserPlantAPI } from "../../api/user-plants";
 
 const UserPlantDetails = ({ route }) => {
   const { plant, plantDetails } = route.params;
   const navigation = useNavigation();
 
-  const deletePlant = async () => {
+  const deletePlant = async (plantId, navigation) => {
     try {
       const token = await AsyncStorage.getItem("token");
       if (!token) {
@@ -25,17 +26,17 @@ const UserPlantDetails = ({ route }) => {
         return;
       }
 
-      await axios.delete(`${API_URL}user-plants/deleted/${plant.id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      Alert.alert("Sukces", "Roślina została usunięta.", [
-        {
-          text: "OK",
-          onPress: () => navigation.goBack(),
-        },
-      ]);
+      const status = await UserPlantAPI.deleteUserPlant(token, plantId);
+      if (status === 200) {
+        Alert.alert("Sukces", "Roślina została usunięta.", [
+          {
+            text: "OK",
+            onPress: () => navigation.goBack(),
+          },
+        ]);
+      } else {
+        Alert.alert("Błąd", "Wystąpił problem z usunięciem rośliny.");
+      }
     } catch (error) {
       console.error("Błąd podczas usuwania rośliny:", error);
       Alert.alert("Błąd", "Wystąpił problem z usunięciem rośliny.");
@@ -112,12 +113,6 @@ const UserPlantDetails = ({ route }) => {
           }°C - ${plantDetails.max_temperature || "N/A"}°C`}</Text>
         </View>
         <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Nasłonecznienie: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.sunlight || "Brak danych"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
           <Text style={styles.detailTitle}>Maksymalne nasłonecznienie: </Text>
           <Text style={styles.detailValue}>
             {plantDetails.max_sunlight || "Brak danych"} lux
@@ -141,44 +136,6 @@ const UserPlantDetails = ({ route }) => {
           <Text style={styles.detailValue}>
             {plantDetails.min_air_humidity || "N/A"}% -{" "}
             {plantDetails.max_air_humidity || "N/A"}%
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Częstotliwość podlewania: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.watering_frequency
-              ? `${plantDetails.watering_frequency} dni`
-              : "Brak danych"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Typ gleby: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.soil_type || "Brak danych"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Środowisko: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.preferred_environment || "Nieokreślone"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Szkodniki: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.pests || "Brak szkodników"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Poziom trudności: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.difficulty_level || "Brak danych"}
-          </Text>
-        </View>
-        <View style={styles.detailItem}>
-          <Text style={styles.detailTitle}>Wymagane czyszczenie: </Text>
-          <Text style={styles.detailValue}>
-            {plantDetails.cleaning_requirement || "Brak wymagań"}
           </Text>
         </View>
       </View>

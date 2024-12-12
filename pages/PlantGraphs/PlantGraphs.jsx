@@ -53,9 +53,9 @@ const PlantConditionsChart = ({ route, navigation }) => {
       }
 
       const response = await axios.get(
-        `${API_URL}micro_assistant/sensor-data/${timeRange}-average`,
+        `${API_URL}devices/data/${plantId}/statistics`,
         {
-          params: { plant_id: plantId },
+          params: { period: timeRange },
           headers: {
             Authorization: `Bearer ${token}`,
           },

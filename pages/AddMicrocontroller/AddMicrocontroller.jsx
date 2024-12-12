@@ -8,18 +8,16 @@ import {
   FlatList,
   StyleSheet,
 } from "react-native";
-import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useNavigation } from "@react-navigation/native";
-import { API_URL } from "../../confiq";
+import { DevicesAPI } from "../../api/devices";
 
 const AddMicrocontroller = ({ route }) => {
-  const { plantId } = route.params; // Pobieramy ID rośliny przekazane z poprzedniego widoku
-  const [microcontrollerId, setMicrocontrollerId] = useState(""); // Pole tekstowe dla nowego mikrokontrolera
-  const [userMicrocontrollers, setUserMicrocontrollers] = useState([]); // Lista mikrokontrolerów użytkownika
+  const { plantId } = route.params;
+  const [microcontrollerId, setMicrocontrollerId] = useState("");
+  const [userMicrocontrollers, setUserMicrocontrollers] = useState([]);
   const navigation = useNavigation();
 
-  // Pobierz mikrokontrolery użytkownika z backendu
   const fetchUserMicrocontrollers = async () => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -28,15 +26,8 @@ const AddMicrocontroller = ({ route }) => {
         return;
       }
 
-      const response = await axios.get(
-        `${API_URL}micro_assistant/user-microcontrollers`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      setUserMicrocontrollers(response.data);
+      const data = await DevicesAPI.getUserMicrocontrollers(token);
+      setUserMicrocontrollers(data);
     } catch (error) {
       console.error("Error fetching user microcontrollers:", error);
       Alert.alert("Błąd", "Nie udało się pobrać mikrokontrolerów.");
@@ -47,7 +38,6 @@ const AddMicrocontroller = ({ route }) => {
     fetchUserMicrocontrollers();
   }, []);
 
-  // Dodaj nowy mikrokontroler po ID z pola tekstowego
   const handleAddNewMicrocontroller = async () => {
     try {
       if (!microcontrollerId.trim()) {
@@ -61,33 +51,24 @@ const AddMicrocontroller = ({ route }) => {
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}micro_assistant/add-or-assign`,
-        {
-          controller_id: microcontrollerId,
-          user_plant_id: plantId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await DevicesAPI.AssignMicrocontroller(
+        token,
+        microcontrollerId,
+        plantId
       );
-
-      Alert.alert("Sukces", response.data.message, [
+      Alert.alert("Sukces", response.message, [
         {
           text: "OK",
-          onPress: () => navigation.navigate("Home"), // Przekierowanie na stronę główną
+          onPress: () => navigation.navigate("Home"),
         },
       ]);
-      fetchUserMicrocontrollers(); // Odśwież listę mikrokontrolerów
+      fetchUserMicrocontrollers();
     } catch (error) {
       console.error("Error adding new microcontroller:", error);
       Alert.alert("Błąd", "Nie udało się dodać nowego mikrokontrolera.");
     }
   };
 
-  // Dodaj mikrokontroler z listy
   const handleAddMicrocontrollerFromList = async (controllerId) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -96,33 +77,24 @@ const AddMicrocontroller = ({ route }) => {
         return;
       }
 
-      const response = await axios.post(
-        `${API_URL}micro_assistant/add-or-assign`,
-        {
-          controller_id: controllerId,
-          user_plant_id: plantId,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
+      const response = await DevicesAPI.AssignMicrocontroller(
+        token,
+        controllerId,
+        plantId
       );
-
-      Alert.alert("Sukces", response.data.message, [
+      Alert.alert("Sukces", response.message, [
         {
           text: "OK",
-          onPress: () => navigation.navigate("Home"), // Przekierowanie na stronę główną
+          onPress: () => navigation.navigate("Home"),
         },
       ]);
-      fetchUserMicrocontrollers(); // Odśwież listę mikrokontrolerów
+      fetchUserMicrocontrollers();
     } catch (error) {
       console.error("Error assigning microcontroller:", error);
       Alert.alert("Błąd", "Nie udało się przypisać mikrokontrolera.");
     }
   };
 
-  // Odepnij mikrokontroler od rośliny
   const handleUnassignMicrocontroller = async (controllerId) => {
     try {
       const token = await AsyncStorage.getItem("token");
@@ -131,20 +103,9 @@ const AddMicrocontroller = ({ route }) => {
         return;
       }
 
-      await axios.post(
-        `${API_URL}micro_assistant/unassign-plant`,
-        {
-          controller_id: controllerId, // Dane w formacie JSON
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
+      await DevicesAPI.unassignMicrocontroller(token, controllerId);
       Alert.alert("Sukces", "Mikrokontroler został odpięty od rośliny.");
-      fetchUserMicrocontrollers(); // Odśwież listę mikrokontrolerów
+      fetchUserMicrocontrollers();
     } catch (error) {
       console.error("Error unassigning microcontroller:", error);
       Alert.alert("Błąd", "Nie udało się odpiąć mikrokontrolera.");
@@ -153,7 +114,6 @@ const AddMicrocontroller = ({ route }) => {
 
   return (
     <View style={styles.container}>
-      {/* Strzałka "Cofnij" */}
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}
@@ -161,7 +121,6 @@ const AddMicrocontroller = ({ route }) => {
         <Text style={styles.backButtonText}>← Wróć</Text>
       </TouchableOpacity>
 
-      {/* Pole tekstowe dla nowego mikrokontrolera */}
       <Text style={styles.title}>Dodaj nowy mikrokontroler</Text>
       <TextInput
         style={styles.input}
@@ -176,7 +135,6 @@ const AddMicrocontroller = ({ route }) => {
         <Text style={styles.addButtonText}>Dodaj nowy mikrokontroler</Text>
       </TouchableOpacity>
 
-      {/* Lista mikrokontrolerów */}
       <Text style={styles.title}>Twoje mikrokontrolery:</Text>
       {userMicrocontrollers.length === 0 ? (
         <Text style={styles.noMicrocontrollersText}>

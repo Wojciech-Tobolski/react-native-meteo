@@ -2,11 +2,11 @@ import { View } from "react-native";
 import { Txt } from "../../components/Txt/Txt";
 import PlantRecognition from "../../components/PlantRecognition/PlantRecognition";
 
-export function Settings() {
+const Settings = () => {
   return (
-    <View>
-      <Txt>Plant Recognition</Txt>
+    <View style={{ flex: 1 }}>
       <PlantRecognition />
     </View>
   );
-}
+};
+export default Settings;

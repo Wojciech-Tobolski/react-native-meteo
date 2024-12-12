@@ -1,6 +1,11 @@
+import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import Tabs from "../components/TabNawigator/TabNawigator";
+
+// Auth Screens
 import LoginPage from "../pages/Login/LoginPage";
+import RegisterPage from "../pages/Register/RegisterPage";
+
+// Main App Screens
 import PlantDetails from "../pages/PlantDetails/PlantDetails";
 import AddUserPlant from "../pages/AddUserPlant/AddUserPlant";
 import UserPlantDetails from "../components/UserPlantDetails/UserPlantDetails";
@@ -8,7 +13,7 @@ import AddMicrocontroller from "../pages/AddMicrocontroller/AddMicrocontroller";
 import PlantConditions from "../pages/PlantConditions/PlantConditions";
 import PlantConditionsChart from "../pages/PlantGraphs/PlantGraphs";
 import NotificationSettings from "../components/NotificationSettings/NotificationSettings";
-import { NotificationsScreen } from "../pages/Notifications/NotificationsScreen";
+import Tabs from "../components/TabNawigator/TabNawigator";
 
 const Stack = createNativeStackNavigator();
 
@@ -19,62 +24,120 @@ export const AppNavigator = ({
   city,
   onSubmitSearch,
 }) => {
-  return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {isAuthenticated ? (
-        <>
-          {/* Główne zakładki */}
-          <Stack.Screen name="Tabs">
-            {() => (
-              <Tabs
-                weather={weather}
-                city={city}
-                onSubmitSearch={onSubmitSearch}
-              />
-            )}
-          </Stack.Screen>
+  console.log("AppNavigator: Rendering with auth state:", isAuthenticated);
 
-          {/* Szczegóły */}
-          <Stack.Screen name="PlantDetails" component={PlantDetails} />
-          <Stack.Screen name="AddUserPlant" component={AddUserPlant} />
-          <Stack.Screen name="UserPlantDetails" component={UserPlantDetails} />
-          <Stack.Screen
-            name="AddMicrocontroller"
-            component={AddMicrocontroller}
+  if (isAuthenticated === undefined || isAuthenticated === null) {
+    console.log("AppNavigator: Auth state is undefined or null");
+    return null;
+  }
+
+  return (
+    <Stack.Navigator
+      screenOptions={{ headerShown: false }}
+      initialRouteName={isAuthenticated ? "MainTabs" : "Login"}
+    >
+      {/* Auth Screens */}
+      <Stack.Screen
+        name="Login"
+        options={{
+          gestureEnabled: false,
+          headerShown: false,
+        }}
+      >
+        {(props) => <LoginPage {...props} onLoginSuccess={onLoginSuccess} />}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="Register"
+        component={RegisterPage}
+        options={{
+          headerShown: false,
+          headerTitle: "Rejestracja",
+          headerTitleAlign: "center",
+        }}
+      />
+
+      {/* Main App Screens */}
+      <Stack.Screen name="MainTabs" options={{ gestureEnabled: false }}>
+        {(props) => (
+          <Tabs
+            {...props}
+            weather={weather}
+            city={city}
+            onSubmitSearch={onSubmitSearch}
           />
-          <Stack.Screen name="PlantConditions" component={PlantConditions} />
-          <Stack.Screen
-            name="PlantConditionsChart"
-            component={PlantConditionsChart}
-          />
-          <Stack.Screen
-            name="NotificationSettings"
-            component={NotificationSettings}
-            options={{
-              headerShown: true,
-              title: "Ustawienia powiadomień",
-              headerStyle: {
-                backgroundColor: "transparent",
-              },
-              headerTintColor: "#000",
-            }}
-          />
-          <Stack.Screen
-            name="Notifications"
-            component={NotificationsScreen}
-            options={{
-              headerShown: true,
-              headerTitle: "Powiadomienia",
-              headerTitleAlign: "center",
-            }}
-          />
-        </>
-      ) : (
-        /* Ekran logowania */
-        <Stack.Screen name="Login">
-          {() => <LoginPage onLoginSuccess={onLoginSuccess} />}
-        </Stack.Screen>
-      )}
+        )}
+      </Stack.Screen>
+
+      <Stack.Screen
+        name="PlantDetails"
+        component={PlantDetails}
+        options={{
+          headerTitle: "Szczegóły rośliny",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="AddUserPlant"
+        component={AddUserPlant}
+        options={{
+          headerTitle: "Dodaj roślinę",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="UserPlantDetails"
+        component={UserPlantDetails}
+        options={{
+          headerTitle: "Szczegóły mojej rośliny",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="AddMicrocontroller"
+        component={AddMicrocontroller}
+        options={{
+          headerTitle: "Dodaj mikrokontroler",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="PlantConditions"
+        component={PlantConditions}
+        options={{
+          headerTitle: "Warunki rośliny",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="PlantConditionsChart"
+        component={PlantConditionsChart}
+        options={{
+          headerTitle: "Wykresy",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
+
+      <Stack.Screen
+        name="NotificationSettings"
+        component={NotificationSettings}
+        options={{
+          headerTitle: "Ustawienia powiadomień",
+          headerTitleAlign: "center",
+          headerShown: true,
+        }}
+      />
     </Stack.Navigator>
   );
 };

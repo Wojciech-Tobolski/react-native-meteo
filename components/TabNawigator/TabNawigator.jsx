@@ -1,10 +1,10 @@
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { Home } from "../../pages/Home/Home";
-import { Plants } from "../../pages/Plants/Plants";
-import { Settings } from "../../pages/Settings/Settings";
-import { Profile } from "../../pages/Profile/Profile";
-import { AddNewPlant } from "../../pages/AddNewPlant/AddNewPlant";
+import Plants from "../../pages/Plants/Plants";
+import Settings from "../../pages/Settings/Settings";
+import Profile from "../../pages/Profile/Profile";
+import AddNewPlant from "../../pages/AddNewPlant/AddNewPlant";
 import { Forecasts } from "../../pages/Forecasts/Forecasts";
 import { View, StyleSheet } from "react-native";
 import {
@@ -14,11 +14,14 @@ import {
   Settings2,
   UserCircle,
 } from "lucide-react-native";
-
+window.homeImportWorking = !!Home;
 const Tab = createBottomTabNavigator();
 const HomeStack = createNativeStackNavigator();
 
 const HomeStackNavigator = ({ weather, city, onSubmitSearch }) => {
+  if (!Home) {
+    throw new Error("Home import failed");
+  }
   return (
     <HomeStack.Navigator
       screenOptions={{

@@ -7,14 +7,28 @@ const API_URLL = `${API_URL}auth`;
 
 export class AuthAPI {
   // Rejestracja użytkownika
-  static async registerUser(userData) {
-    const response = await axios.post(`${API_URL}/register`, userData, {
-      headers: { "Content-Type": "application/json" },
-    });
+  async registerUser({
+    username,
+    password,
+    notification_time,
+    notifications_enabled,
+  }) {
+    try {
+      const response = await axios.post(`${API_URLL}/register`, {
+        username,
+        password,
+        notification_time,
+        notifications_enabled,
+      });
 
-    if (response.status !== 201)
-      throw new Error("Rejestracja nie powiodła się.");
-    return response.data;
+      return response.data;
+    } catch (error) {
+      console.error(
+        "Registration error:",
+        error.response?.data || error.message
+      );
+      throw error;
+    }
   }
 
   // Logowanie użytkownika

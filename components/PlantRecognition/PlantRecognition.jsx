@@ -2,14 +2,15 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  Button,
-  Image,
-  FlatList,
   TouchableOpacity,
+  Image,
   StyleSheet,
+  ActivityIndicator,
+  ScrollView,
 } from "react-native";
 import * as ImagePicker from "expo-image-picker";
 import axios from "axios";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function PlantRecognition() {
   const [selectedImage, setSelectedImage] = useState(null);
@@ -17,7 +18,6 @@ export default function PlantRecognition() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Funkcja do robienia zdjęcia
   const takePhoto = async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (permission.granted) {
@@ -34,7 +34,6 @@ export default function PlantRecognition() {
     }
   };
 
-  // Funkcja do wyboru zdjęcia z galerii
   const pickImage = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
@@ -47,7 +46,6 @@ export default function PlantRecognition() {
     }
   };
 
-  // Funkcja do identyfikacji rośliny
   const identifyPlant = async () => {
     if (!selectedImage) {
       alert("Please select an image first!");
@@ -79,13 +77,9 @@ export default function PlantRecognition() {
         }
       );
 
-      // Logowanie całej odpowiedzi API
-      console.log("API Response:", response.data);
-
       const suggestions = response.data.result?.classification?.suggestions;
-
       if (suggestions && suggestions.length > 0) {
-        setPlantInfo(suggestions); // Przypisanie sugestii do stanu
+        setPlantInfo(suggestions);
       } else {
         setError("No plant identified.");
       }
@@ -96,125 +90,239 @@ export default function PlantRecognition() {
     }
   };
 
-  // Funkcja do weryfikacji i dodania rośliny
-  const verifyAndAddPlant = (plant) => {
-    alert(`Verifying and adding plant: ${plant.name}`);
-    // Tutaj możesz dodać logikę do weryfikacji i dodawania rośliny
-  };
-
-  // Komponent renderujący kafelki
-  const renderPlantItem = ({ item }) => {
-    // Sprawdzamy dostępność obrazów i logujemy URL
-    if (item.similar_images && item.similar_images.length > 0) {
-      item.similar_images.forEach((image, index) => {
-        console.log(`Image ${index + 1} URL:`, image.url_small); // Logowanie URL obrazu
-      });
-    } else {
-      console.log("No similar images available");
-    }
+  const ResultsList = () => {
+    if (!plantInfo.length || loading) return null;
 
     return (
-      <View style={styles.card}>
-        {item.similar_images && item.similar_images.length > 0 ? (
-          item.similar_images.map((image, index) => (
-            <Image
-              key={index}
-              source={{ uri: image.url_small }}
-              style={styles.image}
-            />
-          ))
-        ) : (
-          <Text>No image available</Text>
-        )}
-        <Text style={styles.name}>{item.name}</Text>
-        <Text style={styles.probability}>
-          Probability: {Math.round(item.probability * 100)}%
-        </Text>
-        <TouchableOpacity
-          style={styles.verifyButton}
-          onPress={() => verifyAndAddPlant(item)}
-        >
-          <Text style={styles.verifyButtonText}>Verify & Add</Text>
-        </TouchableOpacity>
+      <View style={styles.resultsContainer}>
+        {plantInfo.map((item) => (
+          <View key={item.id?.toString()} style={styles.card}>
+            <View style={styles.imageContainer}>
+              {item.similar_images && item.similar_images.length > 0 ? (
+                <Image
+                  source={{ uri: item.similar_images[0].url_small }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.noImageContainer}>
+                  <MaterialIcons
+                    name="image-not-supported"
+                    size={40}
+                    color="#666"
+                  />
+                </View>
+              )}
+            </View>
+            <Text style={styles.name}>{item.name}</Text>
+            <View style={styles.probabilityContainer}>
+              <MaterialIcons name="analytics" size={16} color="#666" />
+              <Text style={styles.probability}>
+                {Math.round(item.probability * 100)}%
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.verifyButton}
+              onPress={() => alert(`Verifying: ${item.name}`)}
+            >
+              <MaterialIcons name="add-circle-outline" size={18} color="#fff" />
+              <Text style={styles.verifyButtonText}>Verify & Add</Text>
+            </TouchableOpacity>
+          </View>
+        ))}
       </View>
     );
   };
 
   return (
-    <View style={{ padding: 20 }}>
-      <Text>Select or take a photo of the plant</Text>
-      <Button title="Pick an image from gallery" onPress={pickImage} />
-      <Button title="Take a photo" onPress={takePhoto} />
+    <ScrollView
+      style={styles.mainContainer}
+      contentContainerStyle={styles.contentContainer}
+    >
+      <Text style={styles.headerText}>Plant Recognition</Text>
+
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity style={styles.button} onPress={pickImage}>
+          <MaterialIcons name="photo-library" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Pick Image</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={takePhoto}>
+          <MaterialIcons name="camera-alt" size={24} color="#fff" />
+          <Text style={styles.buttonText}>Take Photo</Text>
+        </TouchableOpacity>
+      </View>
 
       {selectedImage && (
-        <Image
-          source={{ uri: selectedImage.uri }}
-          style={{ width: 200, height: 200, marginVertical: 10 }}
-        />
+        <View style={styles.selectedImageContainer}>
+          <Image
+            source={{ uri: selectedImage.uri }}
+            style={styles.selectedImage}
+            resizeMode="cover"
+          />
+        </View>
       )}
 
-      <Button
-        title="Identify Plant"
+      <TouchableOpacity
+        style={[styles.identifyButton, loading && styles.buttonDisabled]}
         onPress={identifyPlant}
         disabled={loading}
-      />
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <>
+            <MaterialIcons name="search" size={24} color="#fff" />
+            <Text style={styles.buttonText}>Identify Plant</Text>
+          </>
+        )}
+      </TouchableOpacity>
 
-      {/* Wyświetlanie wyników w formie kafelków */}
-      {loading && <Text>Loading...</Text>}
-      {error && <Text style={{ color: "red" }}>{error}</Text>}
-
-      {plantInfo.length > 0 && !loading && (
-        <FlatList
-          data={plantInfo}
-          renderItem={renderPlantItem}
-          keyExtractor={(item) => item.id}
-          numColumns={2} // Wyświetlanie 2 kafelków w jednym wierszu
-        />
+      {error && (
+        <View style={styles.errorContainer}>
+          <MaterialIcons name="error-outline" size={24} color="#ff6b6b" />
+          <Text style={styles.errorText}>{error}</Text>
+        </View>
       )}
-    </View>
+
+      <ResultsList />
+    </ScrollView>
   );
 }
 
-// Style dla kafelków
 const styles = StyleSheet.create({
-  card: {
+  mainContainer: {
     flex: 1,
-    margin: 10,
-    padding: 10,
-    backgroundColor: "#fff",
-    borderRadius: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.8,
-    shadowRadius: 2,
-    elevation: 5,
+    backgroundColor: "rgba(245, 245, 245, 0.4)",
+    marginBottom: 60,
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  headerText: {
+    fontSize: 24,
+    fontWeight: "bold",
+    marginBottom: 20,
+    color: "#333",
+  },
+  buttonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  button: {
+    flex: 1,
+    flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#4CAF50",
+    padding: 12,
+    borderRadius: 8,
+    marginHorizontal: 4,
+    elevation: 2,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    marginLeft: 8,
+  },
+  selectedImageContainer: {
+    alignItems: "center",
+    marginVertical: 16,
+  },
+  selectedImage: {
+    width: "100%",
+    height: 200,
+    borderRadius: 8,
+  },
+  identifyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#2196F3",
+    padding: 14,
+    borderRadius: 8,
+    marginBottom: 16,
+    elevation: 2,
+  },
+  errorContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#ffe5e5",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  errorText: {
+    color: "#ff6b6b",
+    marginLeft: 8,
+    fontSize: 14,
+  },
+  resultsContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+    marginTop: 16,
+  },
+  card: {
+    width: "48%",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+    elevation: 3,
+  },
+  imageContainer: {
+    width: "100%",
+    height: 120,
+    borderRadius: 8,
+    overflow: "hidden",
+    marginBottom: 8,
   },
   image: {
-    width: 100,
-    height: 100,
-    marginBottom: 10,
-    borderRadius: 8,
+    width: "100%",
+    height: "100%",
+  },
+  noImageContainer: {
+    width: "100%",
+    height: "100%",
+    backgroundColor: "#f0f0f0",
+    alignItems: "center",
+    justifyContent: "center",
   },
   name: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    color: "#333",
+    marginBottom: 4,
+  },
+  probabilityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 8,
   },
   probability: {
     fontSize: 14,
-    color: "#555",
-    marginBottom: 10,
+    color: "#666",
+    marginLeft: 4,
   },
   verifyButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     backgroundColor: "#4CAF50",
-    paddingVertical: 5,
-    paddingHorizontal: 15,
-    borderRadius: 5,
+    padding: 8,
+    borderRadius: 6,
   },
   verifyButtonText: {
     color: "#fff",
-    fontWeight: "bold",
+    fontSize: 14,
+    fontWeight: "600",
+    marginLeft: 4,
   },
 });
