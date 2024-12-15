@@ -120,7 +120,7 @@ const Tabs = ({ weather, city, onSubmitSearch }) => {
           tabBarIcon: ({ color, size }) => (
             <Settings2 size={size} color={color} />
           ),
-          tabBarLabel: "Ustawienia",
+          tabBarLabel: "Iedntyfikuj",
         }}
       />
 

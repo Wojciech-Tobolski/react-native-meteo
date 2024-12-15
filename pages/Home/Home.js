@@ -55,7 +55,7 @@ export function Home({ weather, city, onSubmitSearch }) {
           style={styles.notificationButton}
           onPress={() => navigation.navigate("Notifications")}
         >
-          <Bell size={24} color="#333" />
+          <Bell size={24} color="white" />
           {unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{unreadCount}</Text>
@@ -78,7 +78,6 @@ export function Home({ weather, city, onSubmitSearch }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: Constants.statusBarHeight,
     backgroundColor: "transparent",
   },
   topBar: {
@@ -89,15 +88,14 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   weatherSection: {
-    flex: 1,
     paddingRight: 16,
-    backgroundColor: "rgba(255, 255, 255, 0.3)",
-    borderRadius: 12,
-    padding: 8,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    borderRadius: 40,
+    padding: 20,
   },
   notificationButton: {
     padding: 8,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 20,
     position: "relative",
   },
@@ -130,7 +128,7 @@ const styles = StyleSheet.create({
   },
   plantListContainer: {
     flex: 1,
-    backgroundColor: "rgba(255, 255, 255, 0.5)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
     borderRadius: 12,
     padding: 12,
     marginBottom: 12,

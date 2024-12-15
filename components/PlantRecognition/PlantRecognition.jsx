@@ -71,7 +71,7 @@ export default function PlantRecognition() {
         formData,
         {
           headers: {
-            "Api-Key": "7J0DHMu8IsOhuey6Oiw1Vq22BjSutuFoB1LMVJclE840ENPctH",
+            "Api-Key": "e6EnmKe9CID8cEeYNuEcnaB2vc9yCnNC7lI1KONMZ2odTm2I2D",
             "Content-Type": "multipart/form-data",
           },
         }
@@ -81,7 +81,7 @@ export default function PlantRecognition() {
       if (suggestions && suggestions.length > 0) {
         setPlantInfo(suggestions);
       } else {
-        setError("No plant identified.");
+        setError("Nie rozpoznano rośliny.");
       }
     } catch (err) {
       setError("Error identifying plant: " + err.message);
@@ -121,13 +121,13 @@ export default function PlantRecognition() {
                 {Math.round(item.probability * 100)}%
               </Text>
             </View>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               style={styles.verifyButton}
               onPress={() => alert(`Verifying: ${item.name}`)}
             >
               <MaterialIcons name="add-circle-outline" size={18} color="#fff" />
               <Text style={styles.verifyButtonText}>Verify & Add</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         ))}
       </View>
@@ -139,17 +139,17 @@ export default function PlantRecognition() {
       style={styles.mainContainer}
       contentContainerStyle={styles.contentContainer}
     >
-      <Text style={styles.headerText}>Plant Recognition</Text>
+      <Text style={styles.headerText}>Identyfikuj rośline</Text>
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity style={styles.button} onPress={pickImage}>
           <MaterialIcons name="photo-library" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Pick Image</Text>
+          <Text style={styles.buttonText}>Galeria</Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={takePhoto}>
           <MaterialIcons name="camera-alt" size={24} color="#fff" />
-          <Text style={styles.buttonText}>Take Photo</Text>
+          <Text style={styles.buttonText}>Aparat</Text>
         </TouchableOpacity>
       </View>
 
@@ -173,7 +173,7 @@ export default function PlantRecognition() {
         ) : (
           <>
             <MaterialIcons name="search" size={24} color="#fff" />
-            <Text style={styles.buttonText}>Identify Plant</Text>
+            <Text style={styles.buttonText}>Identyfikuj</Text>
           </>
         )}
       </TouchableOpacity>
